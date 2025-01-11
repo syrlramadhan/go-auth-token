@@ -12,6 +12,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtKey = []byte("secret_key")
@@ -28,16 +29,36 @@ func NewUserServiceImpl(userRepository repository.UserRepository, db *sql.DB) Us
 	}
 }
 
+// Fungsi untuk meng-hash password
+func hashPassword(password string) (string, error) {
+	// Menggunakan bcrypt untuk meng-hash password dengan cost 10
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+// Fungsi untuk memverifikasi password
+func verifyPassword(storedHash, password string) bool {
+	// Membandingkan hash yang tersimpan dengan password yang dimasukkan
+	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(password))
+	return err == nil
+}
+
 func (service *userServiceImpl) CreateUser(ctx context.Context, userRequest dto.CreateUserRequest) dto.UserResponse {
 	tx, err := service.DB.Begin()
 	util.SentPanicIfError(err)
 	defer util.CommitOrRollBack(tx)
 
+	hashedPass, err := hashPassword(userRequest.Pass)
+	util.SentPanicIfError(err)
+
 	user := model.User{
 		Id:       uuid.New().String(),
 		Name:     userRequest.Name,
 		Email:    userRequest.Email,
-		Password: userRequest.Pass,
+		Password: hashedPass,
 	}
 
 	createUser, errSave := service.UserRepository.CreateUser(ctx, tx, user)
@@ -128,9 +149,15 @@ func (service *userServiceImpl) LoginUser(ctx context.Context, loginRequest dto.
 		return "", fmt.Errorf("invalid email or password")
 	}
 
-	if user.Password != loginRequest.Pass {
+	if verifyPassword(user.Password, loginRequest.Pass) {
+		fmt.Println("Login berhasil!")
+	} else {
 		return "", fmt.Errorf("invalid email or password")
 	}
+
+	// if user.Password != loginRequest.Pass {
+	// 	return "", fmt.Errorf("invalid email or password")
+	// }
 
 	token, err := service.GenerateJWT(loginRequest.Email)
 	if err != nil {

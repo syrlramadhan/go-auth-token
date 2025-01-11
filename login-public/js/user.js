@@ -1,11 +1,10 @@
-// Mendapatkan data user dari API menggunakan token
 async function getUserData() {
-    const token = localStorage.getItem('authToken');  // Ambil token dari localStorage
+    const token = localStorage.getItem('authToken');
 
     if (!token) {
         console.error('User is not authenticated');
         alert('You need to log in first');
-        window.location.href = 'index.html';  // Arahkan ke index.html jika belum login
+        window.location.href = 'index.html';
         return;
     }
 
@@ -16,7 +15,7 @@ async function getUserData() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,  // Menambahkan token di header untuk autentikasi
+                'Authorization': `Bearer ${token}`,
             }
         });
 
@@ -34,27 +33,24 @@ async function getUserData() {
     }
 }
 
-// Memuat data user setelah halaman siap
 document.addEventListener('DOMContentLoaded', function () {
     const token = localStorage.getItem('authToken');
     if (!token) {
         alert('You must be logged in to view your profile');
-        window.location.href = 'index.html';  // Arahkan ke halaman login jika belum login
+        window.location.href = 'index.html';
     } else {
-        getUserData();  // Ambil data pengguna jika sudah login
+        getUserData();
     }
 });
 
-// Fungsi untuk logout dan menghapus token dari localStorage
 function logout() {
-    localStorage.removeItem('authToken');  // Hapus token dari localStorage
+    localStorage.removeItem('authToken');
     console.log('Logged out successfully');
-    window.location.href = 'index.html';  // Arahkan ke halaman login setelah logout
+    window.location.href = 'index.html';
 }
 
-// Fungsi untuk mengupdate data user
 async function updateUserData(name, email) {
-    const url = `http://localhost:8080/api/user/update/${window.userId}`;  // URL untuk update data user berdasarkan ID
+    const url = `http://localhost:8080/api/user/update/${window.userId}`;
     const data = { name, email };
 
     try {
@@ -70,7 +66,7 @@ async function updateUserData(name, email) {
         if (response.ok) {
             console.log('User updated successfully:', result);
             alert('User updated successfully');
-            getUserData();  // Perbarui data setelah berhasil diupdate
+            getUserData();
         } else {
             console.error('Error updating user:', result);
         }
@@ -79,7 +75,6 @@ async function updateUserData(name, email) {
     }
 }
 
-// Fungsi untuk menghapus user
 async function deleteUser() {
     const url = `http://localhost:8080/api/user/delete/${window.userId}`;
 
@@ -95,7 +90,7 @@ async function deleteUser() {
         if (response.ok) {
             console.log('User deleted successfully:', result);
             alert('User deleted successfully');
-            window.location.href = 'index.html';  // Arahkan ke halaman login setelah penghapusan
+            window.location.href = 'index.html';
         } else {
             console.error('Error deleting user:', result);
         }
@@ -104,20 +99,18 @@ async function deleteUser() {
     }
 }
 
-// Event listener untuk tombol update
 document.getElementById('update-button').addEventListener('click', function () {
     const name = prompt('Enter new name', document.getElementById('user-name').textContent);
     const email = prompt('Enter new email', document.getElementById('user-email').textContent);
 
     if (name && email) {
-        updateUserData(name, email);  // Kirim data untuk update
+        updateUserData(name, email);
     }
 });
 
-// Event listener untuk tombol delete
 document.getElementById('delete-button').addEventListener('click', function () {
     const confirmation = confirm('Are you sure you want to delete your account?');
     if (confirmation) {
-        deleteUser();  // Hapus user
+        deleteUser();
     }
 });

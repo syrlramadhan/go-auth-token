@@ -33,10 +33,8 @@ async function loginUser(email, password) {
         if (response.ok) {
             console.log('Login successful:', result);
 
-            // Menyimpan token di localStorage
-            localStorage.setItem('authToken', result.token); // Pastikan server mengembalikan token di field 'data.token'
+            localStorage.setItem('authToken', result.token);
 
-            // Arahkan ke halaman user.html setelah login
             window.location.href = 'user.html';
         } else {
             console.error('Login failed: ', result);
@@ -116,21 +114,18 @@ async function deleteUser(userId) {
 	}
 }
 
-// Mengambil elemen form dan tombol login
 const loginForm = document.getElementById('login-form');
 
-// Event listener untuk menangani submit form
 loginForm.addEventListener('submit', function (event) {
     event.preventDefault();
     const form = this;
 
-    // Validasi form
     if (!form.checkValidity()) {
         event.stopPropagation();
     } else {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        loginUser(email, password);  // Panggil fungsi loginUser
+        loginUser(email, password);
     }
 
     form.classList.add('was-validated');
