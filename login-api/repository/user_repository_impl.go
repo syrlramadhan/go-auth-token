@@ -43,9 +43,9 @@ func (repository *userRepositoryImpl) ReadUser(ctx context.Context, tx *sql.Tx) 
 }
 
 func (repository *userRepositoryImpl) UpdateUser(ctx context.Context, tx *sql.Tx, user model.User) model.User {
-	query := `UPDATE register SET name = ?, email = ?, password = ? WHERE id = ?`
+	query := `UPDATE register SET name = ?, email = ? WHERE id = ?`
 
-	_, err := tx.ExecContext(ctx, query, user.Name, user.Email, user.Password, user.Id)
+	_, err := tx.ExecContext(ctx, query, user.Name, user.Email, user.Id)
 	util.SentPanicIfError(err)
 
 	return user
