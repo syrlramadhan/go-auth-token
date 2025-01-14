@@ -96,7 +96,6 @@ func (service *userServiceImpl) UpdateUser(ctx context.Context, userRequest dto.
 
 	user.Name = userRequest.Name
 	user.Email = userRequest.Email
-	user.Password = userRequest.Pass
 
 	user = service.UserRepository.UpdateUser(ctx, tx, user)
 
