@@ -11,6 +11,8 @@ type UserService interface {
 	LoginUser(ctx context.Context, loginRiquest dto.LoginUserRequest) (string, error)
 	ReadUser(ctx context.Context) []dto.UserResponse
 	UpdateUser(ctx context.Context, userRequest dto.UpdateUserRequest, idUser string) dto.UserResponse
+	UpdatePhoto(ctx context.Context, userRequest dto.UpdatePhotoRequest, idUser string) dto.UserResponse
 	DeleteUser(ctx context.Context, idUser string) dto.UserResponse
 	GetUserInfoByEmail(ctx context.Context, email string) (dto.UserResponse, error)
+	FindById(ctx context.Context, id string) (dto.UserResponse, error)
 }

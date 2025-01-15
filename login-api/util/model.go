@@ -11,6 +11,7 @@ func ToUserResponse(user model.User) dto.UserResponse {
 		Name:  user.Name,
 		Email: user.Email,
 		Pass:  user.Password,
+		Photo: user.Photo,
 	}
 }
 

@@ -3,7 +3,10 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"tugas-pemrograman-web/dto"
 	"tugas-pemrograman-web/service"
 	"tugas-pemrograman-web/util"
@@ -63,6 +66,53 @@ func (controller *userControllerImpl) UpdateUser(writer http.ResponseWriter, req
 		Status:  "OK",
 		Data:    responseDTO,
 		Message: "update user successfully",
+	}
+
+	writer.Header().Add("Content-Type", "application/json")
+	util.WriteToResponseBody(writer, response)
+}
+
+func (controller *userControllerImpl) UpdatePhoto(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	err := request.ParseMultipartForm(10 << 20) // Max 10MB
+	util.SentPanicIfError(err)
+
+	file, handler, err := request.FormFile("photo") // "photo" harus sama dengan key pada form data
+	if err != nil {
+		http.Error(writer, "Failed to read file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	userId := params.ByName("userId")
+	user, err := controller.UserService.FindById(request.Context(), userId)
+	util.SentPanicIfError(err)
+
+	fileName := fmt.Sprintf("%s.jpeg", user.Email)
+
+	handler.Filename = fileName
+	uploadDir := "./uploads"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		os.Mkdir(uploadDir, os.ModePerm)
+	}
+
+	filePath := filepath.Join(uploadDir, handler.Filename)
+	out, err := os.Create(filePath)
+	util.SentPanicIfError(err)
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	util.SentPanicIfError(err)
+
+	requestUpdate := dto.UpdatePhotoRequest{
+		Photo: handler.Filename,
+	}
+
+	responseDTO := controller.UserService.UpdatePhoto(request.Context(), requestUpdate, userId)
+	response := dto.ResponseList{
+		Code:    http.StatusOK,
+		Status:  "OK",
+		Data:    responseDTO,
+		Message: "update photo successfully",
 	}
 
 	writer.Header().Add("Content-Type", "application/json")

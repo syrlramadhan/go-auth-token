@@ -2,7 +2,6 @@ async function getUserData() {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-        console.error('User is not authenticated');
         alert('You need to log in first');
         window.location.href = 'index.html';
         return;
@@ -21,9 +20,14 @@ async function getUserData() {
 
         const result = await response.json();
         if (response.ok) {
-            console.log('User data:', result);
+            console.log(result)
             document.getElementById('user-name').textContent = result.data.name;
             document.getElementById('user-email').textContent = result.data.email;
+            if (result.data.photo == "No Data") {
+                document.getElementById('profile-picture').src = "images/user-117.webp";
+            } else {
+                document.getElementById('profile-picture').src = `http://localhost:8080/api/user/uploads/${result.data.photo}`;
+            }
             window.userId = result.data.id;
         } else {
             console.error('Error fetching user data:', result);
@@ -42,6 +46,50 @@ document.addEventListener('DOMContentLoaded', function () {
         getUserData();
     }
 });
+
+document.getElementById('profile-picture').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+});
+
+document.getElementById('file-input').addEventListener('change', async () => {
+    const formData = new FormData();
+    const fileInput = document.getElementById('file-input').files[0];
+
+    if (!fileInput) {
+        alert('Please select a file to upload.');
+        return;
+    }
+
+    formData.append('photo', fileInput);
+
+    const url = `http://localhost:8080/api/user/update/photo/${window.userId}`;
+    try {
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: formData,
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert('Photo updated successfully');
+            getUserData();
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('profile-picture').src = e.target.result;
+            };
+            reader.readAsDataURL(fileInput);
+        } else {
+            console.error('Error uploading photo:', result);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+
 
 function logout() {
     localStorage.removeItem('authToken');

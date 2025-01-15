@@ -15,3 +15,7 @@ type UpdateUserRequest struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
+
+type UpdatePhotoRequest struct {
+	Photo string `json:"photo"`
+}

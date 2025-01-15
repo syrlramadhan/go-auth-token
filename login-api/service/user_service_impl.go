@@ -73,6 +73,7 @@ func convertToResponseDTO(user model.User) dto.UserResponse {
 		Name:  user.Name,
 		Email: user.Email,
 		Pass:  user.Password,
+		Photo: user.Photo,
 	}
 }
 
@@ -98,6 +99,21 @@ func (service *userServiceImpl) UpdateUser(ctx context.Context, userRequest dto.
 	user.Email = userRequest.Email
 
 	user = service.UserRepository.UpdateUser(ctx, tx, user)
+
+	return util.ToUserResponse(user)
+}
+
+func (service *userServiceImpl) UpdatePhoto(ctx context.Context, userRequest dto.UpdatePhotoRequest, idUser string) dto.UserResponse {
+	tx, err := service.DB.Begin()
+	util.SentPanicIfError(err)
+	defer util.CommitOrRollBack(tx)
+
+	user, err := service.UserRepository.FindById(ctx, tx, idUser)
+	util.SentPanicIfError(err)
+
+	user.Photo = userRequest.Photo
+
+	user = service.UserRepository.UpdatePhoto(ctx, tx, user)
 
 	return util.ToUserResponse(user)
 }
@@ -166,6 +182,24 @@ func (service *userServiceImpl) LoginUser(ctx context.Context, loginRequest dto.
 	return token, nil
 }
 
+func (service *userServiceImpl) FindById(ctx context.Context, id string) (dto.UserResponse, error) {
+	tx, err := service.DB.Begin()
+	util.SentPanicIfError(err)
+
+	user, err := service.UserRepository.FindById(ctx, tx, id)
+	util.SentPanicIfError(err)
+
+	userResponse := dto.UserResponse{
+		Id: user.Id,
+		Name:  user.Name,
+		Email: user.Email,
+		Pass:  user.Password,
+		Photo: user.Photo,
+	}
+
+	return userResponse, nil
+}
+
 func (service *userServiceImpl) GetUserInfoByEmail(ctx context.Context, email string) (dto.UserResponse, error) {
 	tx, err := service.DB.Begin()
 	util.SentPanicIfError(err)
@@ -180,6 +214,7 @@ func (service *userServiceImpl) GetUserInfoByEmail(ctx context.Context, email st
 		Name:  user.Name,
 		Email: user.Email,
 		Pass:  user.Password,
+		Photo: user.Photo,
 	}
 
 	return userResponse, nil

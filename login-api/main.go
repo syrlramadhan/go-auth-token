@@ -36,14 +36,18 @@ func main() {
 	router.GET("/api/user", userController.ReadUser)
 
 	//update
-	router.PUT("/api/user/update/:userId", userController.UpdateUser)
+	router.PUT("/api/user/update/user:userId", userController.UpdateUser)
+	router.PUT("/api/user/update/photo/:userId", userController.UpdatePhoto)
 
 	//delete
 	router.DELETE("/api/user/delete/:userId", userController.DeleteUser)
 
 	//verify user
 	router.GET("/api/user/me", VerifyJWT(userController.GetUserInfo))
-	
+
+	//serve file
+	router.ServeFiles("/api/user/uploads/*filepath", http.Dir("uploads"))
+
 	handler := corsMiddleware(router)
 
 	server := http.Server{

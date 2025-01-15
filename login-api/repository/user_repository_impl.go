@@ -25,7 +25,7 @@ func (repository *userRepositoryImpl) CreateUser(ctx context.Context, tx *sql.Tx
 }
 
 func (repository *userRepositoryImpl) ReadUser(ctx context.Context, tx *sql.Tx) []model.User {
-	query := `SELECT id, name, email, password FROM register`
+	query := `SELECT id, name, email, password, photo FROM register`
 
 	rows, err := tx.QueryContext(ctx, query)
 	util.SentPanicIfError(err)
@@ -34,7 +34,7 @@ func (repository *userRepositoryImpl) ReadUser(ctx context.Context, tx *sql.Tx) 
 	var users []model.User
 	for rows.Next() {
 		user := model.User{}
-		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Password)
+		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Password, &user.Photo)
 		util.SentPanicIfError(err)
 		users = append(users, user)
 	}
@@ -51,8 +51,17 @@ func (repository *userRepositoryImpl) UpdateUser(ctx context.Context, tx *sql.Tx
 	return user
 }
 
+func (repository *userRepositoryImpl) UpdatePhoto(ctx context.Context, tx *sql.Tx, user model.User) model.User {
+	query := `UPDATE register SET photo = ? WHERE id = ?`
+
+	_, err := tx.ExecContext(ctx, query, user.Photo, user.Id)
+	util.SentPanicIfError(err)
+
+	return user
+}
+
 func (repository *userRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, idUser string) (model.User, error) {
-	query := `SELECT id, name, email, password FROM register WHERE id = ?`
+	query := `SELECT id, name, email, password, photo FROM register WHERE id = ?`
 
 	rows, err := tx.QueryContext(ctx, query, idUser)
 	util.SentPanicIfError(err)
@@ -60,7 +69,7 @@ func (repository *userRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 	defer rows.Close()
 	users := model.User{}
 	if rows.Next() {
-		err := rows.Scan(&users.Id, &users.Name, &users.Email, &users.Password)
+		err := rows.Scan(&users.Id, &users.Name, &users.Email, &users.Password, &users.Photo)
 		util.SentPanicIfError(err)
 		return users, err
 	} else {
@@ -69,7 +78,7 @@ func (repository *userRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, 
 }
 
 func (repository *userRepositoryImpl) FindByEmail(ctx context.Context, tx *sql.Tx, email string) (model.User, error) {
-	query := `SELECT id, name, email, password FROM register WHERE email = ?`
+	query := `SELECT id, name, email, password, photo FROM register WHERE email = ?`
 
 	rows, err := tx.QueryContext(ctx, query, email)
 	util.SentPanicIfError(err)
@@ -77,7 +86,7 @@ func (repository *userRepositoryImpl) FindByEmail(ctx context.Context, tx *sql.T
 	defer rows.Close()
 	users := model.User{}
 	if rows.Next() {
-		err := rows.Scan(&users.Id, &users.Name, &users.Email, &users.Password)
+		err := rows.Scan(&users.Id, &users.Name, &users.Email, &users.Password, &users.Photo)
 		util.SentPanicIfError(err)
 		return users, err
 	} else {
